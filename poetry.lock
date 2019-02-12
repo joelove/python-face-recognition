@@ -26,7 +26,7 @@ version = "4.0.0.21"
 numpy = ">=1.14.5"
 
 [metadata]
-content-hash = "dddbadb07ef1d7c666da468652e87de7b84711cace3ec2b11f0fda77bfa76124"
+content-hash = "22648cda698dd00ccc6fe9325c77440b9a7a1e3485580803d26c17f2672f01a1"
 python-versions = "^3.7.2"
 
 [metadata.hashes]
