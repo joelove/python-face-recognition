@@ -39,7 +39,15 @@ poetry install
 
 ### Training the script
 
-Before running the script, save a .jpg for each face you want to match in the `faces` directory. Training will happen automatically before the first run and the name of the file will be the identifier for that face. If you want to retrain the script with new faces just delete `faces/.faces.npy`:
+Before running the script, save a .jpg for each face you want to match in the `faces` directory. Training will happen automatically before the first run and the name of the file will be the identifier for that face.
+
+```shell
+/faces
+├── john-doe.jpg
+└── jenna-bloggs.jpg
+```
+
+If you want to retrain the script with new faces just delete `faces/.faces.npy`:
 
 ```shell
 rm faces/.faces.npy
