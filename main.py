@@ -1,8 +1,7 @@
-import classes.webcam
+import utilities.webcam_utility
 
 def main():
-    webcam = classes.webcam.Webcam()
-    webcam.begin_capture()
+    utilities.webcam_utility.begin_capture()
 
 if __name__ == '__main__':
     main()
