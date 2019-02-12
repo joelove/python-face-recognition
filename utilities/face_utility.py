@@ -16,8 +16,8 @@ def face_to_vector(image, face):
 def faces_from_image(image):
     UPSAMPLING_FACTOR = 0
     faces = [
-    (face.height() * face.width(), shape_predictor(image, face))
-    for face in face_detector(image, UPSAMPLING_FACTOR)
+        (face.height() * face.width(), shape_predictor(image, face))
+        for face in face_detector(image, UPSAMPLING_FACTOR)
     ]
     return [face for _, face in sorted(faces, reverse=True)]
 
@@ -28,11 +28,15 @@ def identify_face(image):
     descriptor = face_recognition.compute_face_descriptor(image, face)
     face_vector = numpy.array(descriptor).astype(float)
 
-    enroll_identifiers = numpy.array(list(enrolled_faces.keys()))
-    enroll_matrix = numpy.array(list(enrolled_faces.values()))
+    analyzed_faces = np.load('../faces/.faces').item()
+    enroll_identifiers = numpy.array(list(analyzed_faces.keys()))
+    enroll_matrix = numpy.array(list(analyzed_faces.values()))
 
     differences = numpy.subtract(numpy.array(enroll_matrix), face_vector)
     distances = numpy.linalg.norm(differences, axis=1)
     closest_index = numpy.argmin(distances)
 
     return enroll_identifiers[closest_index], distances[closest_index]
+
+def load_faces():
+    numpy.load('faces.npy').item()

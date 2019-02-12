@@ -37,6 +37,14 @@ If you're running MacOS and the many malevolent gods of the Python ecosystem are
 poetry install
 ```
 
+### Training the script
+
+Before running the script, save a .jpg for each face you want to match in the `faces` directory. Training will happen automatically before the first run and the name of the file will be the identifier for that face. If you want to retrain the script with new faces just delete `faces/.faces.npy`:
+
+```shell
+rm faces/.faces.npy
+```
+
 ### Running the script
 
 If you're holding a lucky rabbit's foot and pigs have been flying in your little corner of the infinite multiverse since the emergence of the cosmos, you can just run:

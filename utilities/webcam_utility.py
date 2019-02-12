@@ -21,7 +21,6 @@ def begin_capture():
             ret, frame = video_capture.retrieve()
 
             if (ret == False):
-                print('No frame')
                 break
 
             identifying = True
@@ -35,7 +34,7 @@ def process_frame(frame, log):
     try:
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
         start = time()
-        identifier, distance = identify(frame)
+        identifier, distance = identify_face(frame)
 
         if (distance < 0.6):
             log(identifier, distance, time() - start)
@@ -46,6 +45,7 @@ def process_frame(frame, log):
 
     except Exception as e:
         exc = e
+        print(e)
         log(None, 0, time() - start)
 
     identifying = False
