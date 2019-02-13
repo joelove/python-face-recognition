@@ -10,6 +10,7 @@ numpy = "^1.16"
 dlib = "^19.16"
 opencv-python = "^4.0"
 scikit-image = "^0.14.2"
+asciimatics = "^1.10"
 
 [build-system]
 requires = ["poetry>=0.12"]
