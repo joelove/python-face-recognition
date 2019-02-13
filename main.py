@@ -23,8 +23,7 @@ def main(screen):
                 face_vector = face_to_vector(image, face)
                 analyzed_faces[name] = face_vector
             except Exception as e:
-                print('Unable to analyze', name)
-                print(e)
+                screen.print_at(str(e), 2, 1)
 
         numpy.save('faces/faces', analyzed_faces)
 
