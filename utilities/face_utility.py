@@ -13,8 +13,9 @@ face_matrix = []
 
 def face_to_vector(image, face):
     face_descriptor = face_recognition.compute_face_descriptor(image, face)
+    face_vector = numpy.array(face_descriptor).astype(float)
 
-    return numpy.array(face_descriptor).astype(float)
+    return face_vector
 
 def face_from_image(image, face):
     size = face.height() * face.width()
@@ -23,11 +24,11 @@ def face_from_image(image, face):
     return size, shape
 
 def faces_from_image(image):
-    upsampling_factor = 0
-    detected_faces = face_detector(image, upsampling_factor)
-    faces = [face_from_image(image, face) for face in detected_faces]
+    detected_faces = face_detector(image, 0)
+    faces_in_image = [face_from_image(image, face) for face in detected_faces]
+    sorted_faces = [face for _, face in sorted(faces_in_image, reverse=True)]
 
-    return [face for _, face in sorted(faces, reverse=True)]
+    return sorted_faces
 
 def identity_face(image, face):
     global analyzed_faces, face_identifiers, face_matrix
@@ -36,8 +37,10 @@ def identity_face(image, face):
     differences = numpy.subtract(face_matrix, face_vector)
     distances = numpy.linalg.norm(differences, axis=1)
     closest_index = numpy.argmin(distances)
+    face_identifier = face_identifiers[closest_index]
+    distance = distances[closest_index]
 
-    return face_identifiers[closest_index], distances[closest_index]
+    return face_identifier, distance
 
 def identify_faces(image):
     global analyzed_faces, face_identifiers, face_matrix
@@ -45,8 +48,7 @@ def identify_faces(image):
     analyzed_faces = numpy.load('faces/faces.npy').item()
     face_identifiers = numpy.array(list(analyzed_faces.keys()))
     face_matrix = numpy.array(list(analyzed_faces.values()))
+    faces_in_image = faces_from_image(image)
+    identified_faces = [identity_face(image, face) for face in faces_in_image]
 
-    return [identity_face(image, face) for face in faces_from_image(image)]
-
-def load_faces():
-    numpy.load('faces.npy').item()
+    return identified_faces

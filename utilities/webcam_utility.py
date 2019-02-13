@@ -33,18 +33,16 @@ def begin_capture(screen):
 
                 for index, face in enumerate(faces):
                     identifier, distance = face
-
-                    if (distance < 0.6):
-                        screen.print_at(identifier, 2, 1 + index)
-                        # distance, time.time() - start
-                    else:
-                        screen.print_at('Unknown', 2, 1 + index)
+                    name = identifier if (distance < 0.6) else 'Unknown'
+                    screen.print_at(name, 2, 1 + index)
 
             except Exception as e:
                 screen.print_at(str(e), 2, 1)
 
-        identifying = False
-        screen.refresh()
+            identifying = False
+
+            screen.refresh()
+
         time.sleep(0.1)
 
     video_capture.release()

@@ -17,11 +17,13 @@ def main(screen):
         for path in glob(build_path('faces', '*.jpg')):
             name = name_from_path(path)
             image = io.imread(path)
+
             try:
                 faces = faces_from_image(image)
                 face = faces[0] if faces else None
                 face_vector = face_to_vector(image, face)
                 analyzed_faces[name] = face_vector
+
             except Exception as e:
                 screen.print_at(str(e), 2, 1)
 
