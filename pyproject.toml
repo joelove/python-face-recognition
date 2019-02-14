@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-face-recognition"
-version = "0.1.0"
+version = "0.1.1"
 description = "A real-time facial recognition tool built with Python"
 authors = ["Joe Love <git@joelove.uk>"]
 
@@ -11,6 +11,7 @@ dlib = "^19.16"
 opencv-python = "^4.0"
 scikit-image = "^0.14.2"
 asciimatics = "^1.10"
+funcy = "^1.11"
 
 [build-system]
 requires = ["poetry>=0.12"]

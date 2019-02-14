@@ -1,46 +1,91 @@
 import dlib
 import numpy
+import os
+
+from glob import glob
+from skimage import io
+from funcy import compose, first
 
 
+FACES_DIRECTORY = 'faces';
+FACES_FILENAME = 'faces.npy'
+
+MODELS_DIRECTORY = 'models';
+MODELS_FACE_RECOGNITION_FILENAME = 'dlib_face_recognition_resnet_model_v1.dat';
+MODELS_SHAPE_PREDICTOR_FILENAME = 'shape_predictor_68_face_landmarks.dat';
+
+FACES_FILE_PATH = os.path.join(FACES_DIRECTORY, FACES_FILENAME)
+FACE_RECOGNITION_FILE_PATH = os.path.join(MODELS_DIRECTORY, MODELS_FACE_RECOGNITION_FILENAME)
+SHAPE_PREDICTOR_FILE_PATH = os.path.join(MODELS_DIRECTORY, MODELS_SHAPE_PREDICTOR_FILENAME)
+
+
+get_file_name = compose(first, os.path.splitext, os.path.basename)
+glob_join = compose(glob, os.path.join)
+array_from_list = compose(numpy.array, list)
 face_detector = dlib.get_frontal_face_detector()
-face_recognition = dlib.face_recognition_model_v1('./models/dlib_face_recognition_resnet_model_v1.dat')
-shape_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmarks.dat')
+face_recognition = dlib.face_recognition_model_v1(FACE_RECOGNITION_FILE_PATH)
+shape_predictor = dlib.shape_predictor(SHAPE_PREDICTOR_FILE_PATH)
 
 
 def face_to_vector(image, face):
-    return (
-        numpy
-            .array(face_recognition.compute_face_descriptor(image, face))
-            .astype(float)
-    )
+    face_descriptor = face_recognition.compute_face_descriptor(image, face)
+    face_vector = numpy.array(face_descriptor).astype(float)
+
+    return face_vector
+
 
 def faces_from_image(image):
-    upsampling_factor = 0
-    detected_faces = face_detector(image, upsampling_factor)
+    detected_faces = face_detector(image, 0)
 
-    faces = [
-        (face.height() * face.width(), shape_predictor(image, face))
-        for face in detected_faces
-    ]
+    def face_from_image(face):
+        size = face.height() * face.width()
+        shape = shape_predictor(image, face)
 
-    return [face for _, face in sorted(faces, reverse=True)]
+        return size, shape
 
-def identify_face(image):
-    faces = faces_from_image(image)
-    analyzed_faces = numpy.load('faces/faces.npy').item()
-    face_identifiers = numpy.array(list(analyzed_faces.keys()))
-    face_matrix = numpy.array(list(analyzed_faces.values()))
+    faces_in_image = map(face_from_image, detected_faces)
+    sorted_faces = [face for _, face in sorted(faces_in_image, reverse=True)]
 
-    if (faces):
-        descriptor = face_recognition.compute_face_descriptor(image, faces[0])
-        face_vector = numpy.array(descriptor).astype(float)
-        differences = numpy.subtract(numpy.array(face_matrix), face_vector)
+    return sorted_faces
+
+
+def identify_faces(image):
+    analyzed_faces = numpy.load(FACES_FILE_PATH).item()
+    face_identifiers = array_from_list(analyzed_faces.keys())
+    face_matrix = array_from_list(analyzed_faces.values())
+
+    def identity_face(face):
+        face_vector = face_to_vector(image, face)
+        differences = numpy.subtract(face_matrix, face_vector)
         distances = numpy.linalg.norm(differences, axis=1)
         closest_index = numpy.argmin(distances)
+        face_identifier = face_identifiers[closest_index]
+        distance = distances[closest_index]
 
-        return face_identifiers[closest_index], distances[closest_index]
+        return face_identifier, distance
 
-    return None, 0
+    faces_in_image = faces_from_image(image)
+    identified_faces = map(identity_face, faces_in_image)
 
-def load_faces():
-    numpy.load('faces.npy').item()
+    return identified_faces
+
+
+def create_faces_file():
+    if (os.path.isfile(FACES_FILE_PATH)):
+        return
+
+    analyzed_faces = {}
+
+    for path in glob_join(FACES_DIRECTORY, '*.jpg'):
+        image = io.imread(path)
+        faces = faces_from_image(image)
+
+        if (not faces):
+            break
+
+        face = first(faces)
+        name = get_file_name(path)
+        face_vector = face_to_vector(image, face)
+        analyzed_faces[name] = face_vector
+
+    numpy.save(FACES_FILE_PATH, analyzed_faces)
