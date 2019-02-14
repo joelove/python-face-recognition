@@ -34,16 +34,16 @@ def face_to_vector(image, face):
     return face_vector
 
 
-def face_from_image(image, face):
-    size = face.height() * face.width()
-    shape = shape_predictor(image, face)
-
-    return size, shape
-
-
 def faces_from_image(image):
     detected_faces = face_detector(image, 0)
-    faces_in_image = [face_from_image(image, face) for face in detected_faces]
+
+    def face_from_image(face):
+        size = face.height() * face.width()
+        shape = shape_predictor(image, face)
+
+        return size, shape
+
+    faces_in_image = map(face_from_image, detected_faces)
     sorted_faces = [face for _, face in sorted(faces_in_image, reverse=True)]
 
     return sorted_faces
