@@ -4,15 +4,27 @@ import os
 
 from glob import glob
 from skimage import io
+from funcy import compose, first
+
 
 FACES_DIRECTORY = 'faces';
 FACES_FILENAME = 'faces.npy'
 
-FACES_FILE_PATH = os.path.join(FACES_DIRECTORY, FACES_FILENAME)
+MODELS_DIRECTORY = 'models';
+MODELS_FACE_RECOGNITION_FILENAME = 'dlib_face_recognition_resnet_model_v1.dat';
+MODELS_SHAPE_PREDICTOR_FILENAME = 'shape_predictor_68_face_landmarks.dat';
 
+FACES_FILE_PATH = os.path.join(FACES_DIRECTORY, FACES_FILENAME)
+FACE_RECOGNITION_FILE_PATH = os.path.join(MODELS_DIRECTORY, MODELS_FACE_RECOGNITION_FILENAME)
+SHAPE_PREDICTOR_FILE_PATH = os.path.join(MODELS_DIRECTORY, MODELS_SHAPE_PREDICTOR_FILENAME)
+
+
+get_file_name = compose(first, os.path.splitext, os.path.basename)
+glob_join = compose(glob, os.path.join)
+array_from_list = compose(numpy.array, list)
 face_detector = dlib.get_frontal_face_detector()
-face_recognition = dlib.face_recognition_model_v1('./models/dlib_face_recognition_resnet_model_v1.dat')
-shape_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmarks.dat')
+face_recognition = dlib.face_recognition_model_v1(FACE_RECOGNITION_FILE_PATH)
+shape_predictor = dlib.shape_predictor(SHAPE_PREDICTOR_FILE_PATH)
 
 
 def face_to_vector(image, face):
@@ -39,8 +51,8 @@ def faces_from_image(image):
 
 def identify_faces(image):
     analyzed_faces = numpy.load(FACES_FILE_PATH).item()
-    face_identifiers = numpy.array(list(analyzed_faces.keys()))
-    face_matrix = numpy.array(list(analyzed_faces.values()))
+    face_identifiers = array_from_list(analyzed_faces.keys())
+    face_matrix = array_from_list(analyzed_faces.values())
 
     def identity_face(face):
         face_vector = face_to_vector(image, face)
@@ -64,15 +76,16 @@ def create_faces_file():
 
     analyzed_faces = {}
 
-    for path in glob(os.path.join(FACES_DIRECTORY, '*.jpg')):
+    for path in glob_join(FACES_DIRECTORY, '*.jpg'):
         image = io.imread(path)
         faces = faces_from_image(image)
 
         if (not faces):
             break
 
-        name = os.path.splitext(os.path.basename(path))[0]
-        face_vector = face_to_vector(image, faces[0])
+        face = first(faces)
+        name = get_file_name(path)
+        face_vector = face_to_vector(image, face)
         analyzed_faces[name] = face_vector
 
     numpy.save(FACES_FILE_PATH, analyzed_faces)
