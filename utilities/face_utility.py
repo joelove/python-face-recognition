@@ -10,7 +10,7 @@ from utilities.path_utility import build_path, name_from_path
 FACES_DIRECTORY = 'faces';
 FACES_FILENAME = 'faces.npy'
 
-ANALYZED_FACES_PATH = build_path(FACES_DIRECTORY, FACES_FILENAME)
+FACES_FILE_PATH = build_path(FACES_DIRECTORY, FACES_FILENAME)
 
 face_detector = dlib.get_frontal_face_detector()
 face_recognition = dlib.face_recognition_model_v1('./models/dlib_face_recognition_resnet_model_v1.dat')
@@ -35,8 +35,28 @@ def faces_from_image(image):
 
     return sorted_faces
 
-def analyze_faces():
-    if (not os.path.isfile(ANALYZED_FACES_PATH)):
+def identity_face(image, face, face_matrix, face_identifiers):
+    face_vector = face_to_vector(image, face)
+    differences = numpy.subtract(face_matrix, face_vector)
+    distances = numpy.linalg.norm(differences, axis=1)
+    closest_index = numpy.argmin(distances)
+    face_identifier = face_identifiers[closest_index]
+    distance = distances[closest_index]
+
+    return face_identifier, distance
+
+def identify_faces(image):
+    analyzed_faces = numpy.load(FACES_FILE_PATH).item()
+    face_identifiers = numpy.array(list(analyzed_faces.keys()))
+    face_matrix = numpy.array(list(analyzed_faces.values()))
+    faces_in_image = faces_from_image(image)
+    identified_faces = [identity_face(image, face, face_matrix, face_identifiers) for face in faces_in_image]
+
+    return identified_faces
+
+
+def create_faces_file():
+    if (not os.path.isfile(FACES_FILE_PATH)):
         analyzed_faces = {}
 
         for path in glob(build_path(FACES_DIRECTORY, '*.jpg')):
@@ -50,23 +70,4 @@ def analyze_faces():
             face_vector = face_to_vector(image, faces[0])
             analyzed_faces[name] = face_vector
 
-        numpy.save(ANALYZED_FACES_PATH, analyzed_faces)
-
-def identity_face(image, face, face_matrix, face_identifiers):
-    face_vector = face_to_vector(image, face)
-    differences = numpy.subtract(face_matrix, face_vector)
-    distances = numpy.linalg.norm(differences, axis=1)
-    closest_index = numpy.argmin(distances)
-    face_identifier = face_identifiers[closest_index]
-    distance = distances[closest_index]
-
-    return face_identifier, distance
-
-def identify_faces(image):
-    analyzed_faces = numpy.load('faces/faces.npy').item()
-    face_identifiers = numpy.array(list(analyzed_faces.keys()))
-    face_matrix = numpy.array(list(analyzed_faces.values()))
-    faces_in_image = faces_from_image(image)
-    identified_faces = [identity_face(image, face, face_matrix, face_identifiers) for face in faces_in_image]
-
-    return identified_faces
+        numpy.save(FACES_FILE_PATH, analyzed_faces)
