@@ -1,6 +1,6 @@
 import cv2
 import time
-import face_matcher
+import utilities.face_utility
 
 def capture(screen):
     identifying = False
@@ -14,7 +14,7 @@ def capture(screen):
             break;
 
         image = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
-        faces = face_matcher.identify_faces(image)
+        faces = utilities.face_utility.identify_faces(image)
 
         screen.clear()
 

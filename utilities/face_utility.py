@@ -53,3 +53,22 @@ def analyze_faces():
                 pass
 
         numpy.save(ANALYZED_FACES_PATH, analyzed_faces)
+
+def identity_face(image, face, face_matrix, face_identifiers):
+    face_vector = face_to_vector(image, face)
+    differences = numpy.subtract(face_matrix, face_vector)
+    distances = numpy.linalg.norm(differences, axis=1)
+    closest_index = numpy.argmin(distances)
+    face_identifier = face_identifiers[closest_index]
+    distance = distances[closest_index]
+
+    return face_identifier, distance
+
+def identify_faces(image):
+    analyzed_faces = numpy.load('faces/faces.npy').item()
+    face_identifiers = numpy.array(list(analyzed_faces.keys()))
+    face_matrix = numpy.array(list(analyzed_faces.values()))
+    faces_in_image = faces_from_image(image)
+    identified_faces = [identity_face(image, face, face_matrix, face_identifiers) for face in faces_in_image]
+
+    return identified_faces
