@@ -5,12 +5,10 @@ import os
 from glob import glob
 from skimage import io
 
-from utilities.path_utility import build_path, name_from_path
-
 FACES_DIRECTORY = 'faces';
 FACES_FILENAME = 'faces.npy'
 
-FACES_FILE_PATH = build_path(FACES_DIRECTORY, FACES_FILENAME)
+FACES_FILE_PATH = os.path.join(FACES_DIRECTORY, FACES_FILENAME)
 
 face_detector = dlib.get_frontal_face_detector()
 face_recognition = dlib.face_recognition_model_v1('./models/dlib_face_recognition_resnet_model_v1.dat')
@@ -56,18 +54,20 @@ def identify_faces(image):
 
 
 def create_faces_file():
-    if (not os.path.isfile(FACES_FILE_PATH)):
-        analyzed_faces = {}
+    if (os.path.isfile(FACES_FILE_PATH)):
+        return
 
-        for path in glob(build_path(FACES_DIRECTORY, '*.jpg')):
-            image = io.imread(path)
-            faces = faces_from_image(image)
+    analyzed_faces = {}
 
-            if (not faces):
-                break
+    for path in glob(os.path.join(FACES_DIRECTORY, '*.jpg')):
+        image = io.imread(path)
+        faces = faces_from_image(image)
 
-            name = name_from_path(path)
-            face_vector = face_to_vector(image, faces[0])
-            analyzed_faces[name] = face_vector
+        if (not faces):
+            break
 
-        numpy.save(FACES_FILE_PATH, analyzed_faces)
+        name = os.path.splitext(os.path.basename(path))[0]
+        face_vector = face_to_vector(image, faces[0])
+        analyzed_faces[name] = face_vector
+
+    numpy.save(FACES_FILE_PATH, analyzed_faces)
