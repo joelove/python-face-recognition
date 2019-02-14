@@ -5,7 +5,7 @@ import os
 from glob import glob
 from skimage import io
 
-from utilities.path_utility import build_path
+from utilities.path_utility import build_path, name_from_path
 
 FACES_DIRECTORY = 'faces';
 FACES_FILENAME = 'faces.npy'
@@ -40,17 +40,15 @@ def analyze_faces():
         analyzed_faces = {}
 
         for path in glob(build_path(FACES_DIRECTORY, '*.jpg')):
-            name = name_from_path(path)
             image = io.imread(path)
+            faces = faces_from_image(image)
 
-            try:
-                faces = faces_from_image(image)
-                face = faces[0] if faces else None
-                face_vector = face_to_vector(image, face)
-                analyzed_faces[name] = face_vector
+            if (not faces):
+                break
 
-            except Exception as e:
-                pass
+            name = name_from_path(path)
+            face_vector = face_to_vector(image, faces[0])
+            analyzed_faces[name] = face_vector
 
         numpy.save(ANALYZED_FACES_PATH, analyzed_faces)
 
