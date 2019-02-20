@@ -12,6 +12,12 @@ opencv-python = "^4.0"
 scikit-image = "^0.14.2"
 asciimatics = "^1.10"
 funcy = "^1.11"
+Pillow = "^5.4"
+
+[tool.poetry.dev-dependencies]
+pytest-mock = "^1.10"
+pytest = "^4.2"
+pytest-stub = "^0.1.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
